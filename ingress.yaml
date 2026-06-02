@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+  namespace: lab
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned
+spec:
+  tls:
+  - hosts:
+    - web.10.5.0.83.nip.io
+    secretName: web-tls
+  rules:
+  - host: web.10.5.0.83.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: web
+            port:
+              number: 80
