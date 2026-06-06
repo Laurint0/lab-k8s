@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: lab-alerts
+  namespace: lab
+  labels:
+    release: monitoring
+spec:
+  groups:
+  - name: lab.rules
+    rules:
+    - alert: PodCrashLooping
+      expr: rate(kube_pod_container_status_restarts_total{namespace="lab"}[5m]) * 60 > 0
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Pod {{ $labels.pod }} sta crashando"
+        description: "Il pod {{ $labels.pod }} nel namespace lab si è riavviato di recente"
