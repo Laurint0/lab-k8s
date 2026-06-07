@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: web
-        image: nginx:alpine
+        image: ghcr.io/Laurint0/lab-k8s/web:latest
         ports:
         - containerPort: 80
         - containerPort: 443

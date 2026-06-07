@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K8s Lab · GitOps Pipeline completa su k3s</title>
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0c10;
+            color: #eef2ff;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+
+        /* gradient background moderno */
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(30, 40, 70, 0.5), #0a0c10 80%);
+            z-index: -2;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 2rem 2rem 4rem;
+        }
+
+        /* header con effetto vetro */
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 1rem;
+            background: rgba(15, 25, 45, 0.55);
+            backdrop-filter: blur(12px);
+            border-radius: 3rem;
+            border: 1px solid rgba(72, 187, 255, 0.2);
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.5);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #5cb0ff, #a0f0ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            background: #1e2a3e;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin: 1rem 0;
+            border: 1px solid #2d4a6e;
+            color: #9cd4ff;
+        }
+
+        .hero p {
+            max-width: 800px;
+            margin: 1rem auto 0;
+            color: #b9c7d9;
+            font-size: 1.1rem;
+        }
+
+        /* sezioni generali */
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 5px solid #2b8cff;
+            padding-left: 1rem;
+        }
+
+        .section-title i {
+            color: #2b8cff;
+            font-size: 1.6rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.8rem;
+        }
+
+        .card {
+            background: rgba(18, 25, 40, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(66, 153, 225, 0.2);
+            transition: all 0.25s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .card:hover {
+            border-color: #2b8cff70;
+            transform: translateY(-4px);
+            background: rgba(22, 32, 50, 0.8);
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card h3 i {
+            font-size: 1.8rem;
+            color: #2b8cff;
+        }
+
+        .badge-tech {
+            display: inline-block;
+            background: #111a28;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-family: monospace;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #2d4059;
+        }
+
+        .code-block {
+            background: #0a0f18;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            border-left: 3px solid #2b8cff;
+        }
+
+        .timeline {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .timeline-step {
+            background: #0f1622;
+            flex: 1;
+            min-width: 160px;
+            border-radius: 1.2rem;
+            padding: 1rem;
+            text-align: center;
+            border-top: 3px solid #2b8cff;
+        }
+
+        .architecture-flow {
+            background: #0c111c;
+            border-radius: 2rem;
+            padding: 1.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 500;
+        }
+
+        .flow-item {
+            background: #1e2a3a;
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .arrow {
+            font-size: 1.4rem;
+            color: #5cb0ff;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #1e2a3a;
+            color: #7d8caa;
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                padding: 1rem;
+            }
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .timeline {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="container">
+    
+    <!-- Hero -->
+    <div class="hero">
+        <div class="badge">
+            <i class="fas fa-check-circle"></i> PRODUCTION-READY LAB · GITOPS + K3S
+        </div>
+        <h1>K8s GitOps Pipeline</h1>
+        <p>Infrastructure as Code · CI/CD completo · Auto-healing · Monitoring integrato</p>
+        <p style="font-size: 0.9rem; margin-top: 1rem;">
+            <i class="fas fa-code-branch"></i> GitHub Actions  →  GHCR  →  ArgoCD  →  k3s  →  Prometheus/Grafana
+        </p>
+    </div>
+
+    <!-- Panoramica architetturale -->
+    <div class="section">
+        <div class="section-title">
+            <i class="fas fa-project-diagram"></i>
+            <span>Architettura GitOps reale</span>
+        </div>
+        <div class="architecture-flow">
+            <span class="flow-item"><i class="fab fa-git-alt"></i> git push</span>
+            <span class="arrow">→</span>
+            <span class="flow-item"><i class="fab fa-github"></i> GitHub Actions</span>
+            <span class="arrow">→</span>
+            <span class="flow-item"><i class="fas fa-box"></i> GHCR (immagini)</span>
+            <span class="arrow">→</span>
+            <span class="flow-item"><i class="fas fa-sync-alt"></i> ArgoCD</span>
+            <span class="arrow">→</span>
+            <span class="flow-item"><i class="fas fa-cubes"></i> k3s cluster</span>
+            <span class="arrow">→</span>
+            <span class="flow-item"><i class="fas fa-chart-line"></i> Monitoring</span>
+        </div>
+        <div class="code-block" style="margin-top: 1rem;">
+            📌 "Il cluster diventa uno specchio del repo Git. Nessun kubectl apply manuale in produzione."
+        </div>
+    </div>
+
+    <!-- FASE 1: Core Kubernetes -->
+    <div class="section">
+        <div class="section-title">
+            <i class="fas fa-cube"></i>
+            <span>Fase 1 · Fondamenti Kubernetes su k3s</span>
+        </div>
+        <div class="card-grid">
+            <div class="card">
+                <h3><i class="fas fa-ship"></i> Deployment + Service</h3>
+                <p>Due pod nginx:ALPINE con self-healing integrato. Il cluster mantiene sempre lo stato desiderato.</p>
+                <div class="code-block">
+                    replicas: 2<br>
+                    selector: app: web<br>
+                    → kubectl delete pod → k8s ricrea istantaneamente
+                </div>
+                <span class="badge-tech">Deployment</span>
+                <span class="badge-tech">ClusterIP</span>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-globe"></i> Ingress + TLS (cert-manager)</h3>
+                <p>Traefik come Ingress Controller, dominio nip.io, HTTPS self-signed con ClusterIssuer.</p>
+                <div class="code-block">
+                    ingress: web.192.168.x.x.nip.io<br>
+                    cert-manager → certificato automatico
+                </div>
+                <span class="badge-tech">Traefik</span>
+                <span class="badge-tech">cert-manager</span>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-dns"></i> Service Discovery</h3>
+                <p>DNS interno: <strong>web.lab.svc.cluster.local</strong> — microservizi si parlano nativamente.</p>
+                <span class="badge-tech">k3s</span>
+                <span class="badge-tech">CoreDNS</span>
+            </div>
+        </div>
+        <div class="code-block" style="margin-top: 0.8rem;">
+            <i class="fas fa-terminal"></i> kubectl get all -n lab  → 2 pod Running, service web, ingress ready, certificate True
+        </div>
+    </div>
+
+    <!-- FASE 2: ArgoCD GitOps -->
+    <div class="section">
+        <div class="section-title">
+            <i class="fas fa-code-branch"></i>
+            <span>Fase 2 · ArgoCD — La vera GitOps</span>
+        </div>
+        <div class="card-grid">
+            <div class="card">
+                <h3><i class="fas fa-eye"></i> Continuous Sync</h3>
+                <p>ArgoCD monitora il repo GitHub e sincronizza automaticamente. Sync Policy = Automatic.</p>
+                <span class="badge-tech">Sync Policy: Auto</span>
+                <span class="badge-tech">Self-healing</span>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-history"></i> Rollback nativo</h3>
+                <p>Cambi via Git commit: da 2→3 repliche, ArgoCD applica in cluster. Git è la single source of truth.</p>
+                <div class="code-block">
+                    git commit -m "scale to 3 replicas"<br>
+                    → ArgoCD rileva → deploy automatico
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-columns"></i> UI + port-forward</h3>
+                <p>Accesso web alla dashboard ArgoCD con credenziali admin. Stato in tempo reale e diff visivo.</p>
+                <span class="badge-tech">https://10.5.0.83:8080</span>
+            </div>
+        </div>
+        <div class="code-block">
+            🔁 Ogni modifica al repo Git → ArgoCD applica sul cluster → differenze segnalate → drift prevention.
+        </div>
+    </div>
+
+    <!-- FASE 3: Monitoring + Alerting -->
+    <div class="section">
+        <div class="section-title">
+            <i class="fas fa-chart-line"></i>
+            <span>Fase 3 · Prometheus + Grafana (Osservabilità)</span>
+        </div>
+        <div class="card-grid">
+            <div class="card">
+                <h3><i class="fas fa-tachometer-alt"></i> kube-prometheus-stack</h3>
+                <p>Installato con Helm: Prometheus (metriche), Grafana (dashboard), AlertManager, Node exporter.</p>
+                <span class="badge-tech">Helm</span>
+                <span class="badge-tech">PromQL</span>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-bell"></i> Alert rule reale</h3>
+                <p>PodCrashLooping — rileva container in crash nel namespace lab tramite PrometheusRule.</p>
+                <div class="code-block">
+                    expr: rate(kube_pod_container_status_restarts_total[5m]) * 60 > 0<br>
+                    for: 1m → stato FIRING su Grafana
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-chart-simple"></i> Dashboard predefinite</h3>
+                <p>"Kubernetes / Compute Resources / Cluster" — uso CPU/RAM storico e live. Stesso approccio Zabbix ma automatico.</p>
+                <span class="badge-tech">Node Exporter</span>
+                <span class="badge-tech">kube-state-metrics</span>
+            </div>
+        </div>
+        <div class="code-block">
+            <i class="fas fa-database"></i> Query PromQL essenziale: <strong>rate(container_cpu_usage_seconds_total{namespace="lab"}[5m])</strong>
+        </div>
+    </div>
+
+    <!-- FASE 4: CI/CD Pipeline completa -->
+    <div class="section">
+        <div class="section-title">
+            <i class="fab fa-github"></i>
+            <span>Fase 4 · Pipeline CI/CD con GitHub Actions + GHCR</span>
+        </div>
+        <div class="card-grid">
+            <div class="card">
+                <h3><i class="fas fa-robot"></i> GitHub Actions workflow</h3>
+                <p>Trigger su push in app/ → build immagine Docker → push su GHCR → aggiornamento automatico del tag nel deployment.yaml</p>
+                <div class="code-block">
+                    name: Build and Push<br>
+                    docker/build-push-action@v5<br>
+                    sed -i "s|image:.*|image: ghcr.io/.../web:${{ github.sha }}|" deployment.yaml<br>
+                    git commit & push
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-arrow-right-arrow-left"></i> Rolling update senza downtime</h3>
+                <p>ArgoCD rileva il nuovo tag → k3s esegue rolling update → traffico zero-downtime.</p>
+                <span class="badge-tech">RollingUpdate</span>
+                <span class="badge-tech">Immutable tag</span>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-html5"></i> App Custom HTML</h3>
+                <p>Nginx serve index.html personalizzato (v1 → v2). CI/CD gestisce l'intero lifecycle.</p>
+                <div class="code-block">
+                    &lt;h1&gt;Deploy v2 — aggiornato via CI/CD!&lt;/h1&gt;
+                </div>
+            </div>
+        </div>
+        <div class="architecture-flow" style="margin-top: 1rem; justify-content: space-evenly;">
+            <span class="flow-item"><i class="fab fa-github"></i> push main</span>
+            <span class="arrow">⚙️</span>
+            <span class="flow-item"><i class="fas fa-cogs"></i> Actions</span>
+            <span class="arrow">📦</span>
+            <span class="flow-item"><i class="fas fa-registered"></i> GHCR</span>
+            <span class="arrow">🔄</span>
+            <span class="flow-item"><i class="fas fa-sync-alt"></i> ArgoCD sync</span>
+            <span class="arrow">🚀</span>
+            <span class="flow-item"><i class="fas fa-cloud-upload-alt"></i> k3s rollout</span>
+        </div>
+    </div>
+
+    <!-- TABELLA RIASSUNTIVA TECNOLOGIE -->
+    <div class="section">
+        <div class="section-title">
+            <i class="fas fa-tools"></i>
+            <span>Stack completo in produzione (lab → azienda)</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 1rem;">
+            <div class="card" style="text-align: center;"><i class="fab fa-docker" style="font-size: 2rem;"></i><br><strong>Docker</strong><br>Container runtime</div>
+            <div class="card" style="text-align: center;"><i class="fas fa-cubes"></i><br><strong>k3s</strong><br>K8s leggero</div>
+            <div class="card" style="text-align: center;"><i class="fas fa-code-branch"></i><br><strong>ArgoCD</strong><br>GitOps continuous delivery</div>
+            <div class="card" style="text-align: center;"><i class="fab fa-github"></i><br><strong>GitHub Actions</strong><br>CI/CD pipeline</div>
+            <div class="card" style="text-align: center;"><i class="fas fa-chart-line"></i><br><strong>Prometheus + Grafana</strong><br>Monitoring & alerting</div>
+            <div class="card" style="text-align: center;"><i class="fas fa-lock"></i><br><strong>cert-manager</strong><br>TLS automatico</div>
+        </div>
+    </div>
+
+    <!-- COME RACCONTARLO AL COLLOQUIO -->
+    <div class="section">
+        <div class="section-title">
+            <i class="fas fa-comments"></i>
+            <span>🎤 Come raccontarlo al colloquio tecnico</span>
+        </div>
+        <div class="card" style="background: linear-gradient(145deg, #0f172a, #0a0f1a);">
+            <p style="font-size: 1.1rem; font-style: italic; margin-bottom: 1rem;">
+                "Ho costruito una pipeline GitOps completa su un cluster k3s: GitHub Actions builda l'immagine Docker e la pusha su GHCR, ArgoCD monitora il repo e sincronizza automaticamente il cluster. 
+                Aggiunto Prometheus + Grafana per il monitoring post-deploy con alert su CrashLoopBackOff e metriche CPU/RAM. 
+                Tutto il lifecycle infrastrutturale passa da Git — niente kubectl a mano, auto healing e rollback istantaneo via Git."
+            </p>
+            <div class="badge-tech"><i class="fas fa-check-circle"></i> CI/CD completo</div>
+            <div class="badge-tech"><i class="fas fa-chart-simple"></i> Osservabilità reale</div>
+            <div class="badge-tech"><i class="fas fa-infinity"></i> Git single source of truth</div>
+        </div>
+    </div>
+
+    <!-- VERIFICHE FINALI E COMANDI -->
+    <div class="section">
+        <div class="section-title">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Verifiche & comandi utili (cosa controllare in produzione)</span>
+        </div>
+        <div class="card-grid">
+            <div class="card">
+                <h3><i class="fas fa-eye"></i> Stato cluster</h3>
+                <code>kubectl get nodes</code><br>
+                <code>kubectl get pods -n lab</code><br>
+                <code>kubectl get ingress -n lab</code>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-chart-line"></i> Monitoring</h3>
+                <code>kubectl port-forward svc/monitoring-grafana -n monitoring 3000:80</code><br>
+                <span>Grafana: admin / prom-operator</span>
+            </div>
+            <div class="card">
+                <h3><i class="fab fa-git-alt"></i> GitOps sync</h3>
+                <code>kubectl port-forward svc/argocd-server -n argocd 8080:443</code><br>
+                <span>UI ArgoCD + logs applicazione</span>
+            </div>
+        </div>
+        <div class="code-block" style="margin-top: 1rem;">
+            🔍 Dopo ogni push: GitHub Actions ✅ → ArgoCD sincronizza → nuovo rollout → dashboard Grafana mostra metriche in tempo reale.
+        </div>
+    </div>
+
+    <!-- LIVELLO PRODUZIONE -->
+    <div class="section">
+        <div class="section-title">
+            <i class="fas fa-rocket"></i>
+            <span>Why this lab is different</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between;">
+            <div style="flex:1; min-width: 200px; background: #0f1622; border-radius: 1.5rem; padding: 1.2rem;">
+                <i class="fas fa-dharmachakra" style="color: #2b8cff;"></i>
+                <h4 style="margin: 0.5rem 0 0.2rem;">Self-Healing</h4>
+                <small>K8s ricrea pod falliti + ArgoCD ripristina drift</small>
+            </div>
+            <div style="flex:1; min-width: 200px; background: #0f1622; border-radius: 1.5rem; padding: 1.2rem;">
+                <i class="fas fa-code-branch"></i>
+                <h4 style="margin: 0.5rem 0 0.2rem;">Audit completo</h4>
+                <small>Ogni modifica su Git → chi, quando, perché, rollback con revert</small>
+            </div>
+            <div style="flex:1; min-width: 200px; background: #0f1622; border-radius: 1.5rem; padding: 1.2rem;">
+                <i class="fas fa-charging-station"></i>
+                <h4 style="margin: 0.5rem 0 0.2rem;">Zero touch deploy</h4>
+                <small>Dallo sviluppo al cluster senza intervento manuale</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <i class="fas fa-cloud-upload-alt"></i> Progetto lab completo: k3s + ArgoCD + Prometheus + GitHub Actions · Pipeline stile enterprise<br>
+        <span style="font-size: 0.8rem;">Tutto il codice versionato su GitHub → single source of truth → GitOps puro</span>
+    </div>
+</div>
+</body>
+</html>
