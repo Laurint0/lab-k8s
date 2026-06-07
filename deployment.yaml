@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: web
-        image: ghcr.io/laurint0/lab-k8s/web:fc5d48d6b9593d7f9025126d2fbbf708322246cd
+        image: ghcr.io/laurint0/lab-k8s/web:dc88bb7f86f759690af160f5fe9e58ffc74523a6
         ports:
         - containerPort: 80
         - containerPort: 443
