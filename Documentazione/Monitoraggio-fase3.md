@@ -2,7 +2,6 @@
 
 Concetto chiave prima di iniziare: in Kubernetes il monitoring non funziona come Zabbix dove configuri ogni host manualmente. Prometheus **scopre i target da solo** interrogando le API di k8s — si chiama **service discovery**. Grafana legge da Prometheus e mostra le dashboard.
 
-Il tuo background con Zabbix ti aiuta molto qui — i concetti sono gli stessi, cambia solo il modo in cui i dati vengono raccolti.
 
 ---
 
