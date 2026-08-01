@@ -90,13 +90,10 @@ Grafana viene con decine di dashboard già pronte. Vai su **Dashboards → Brows
 
 **"Node Exporter / Nodes"** — metriche del nodo fisico: CPU, RAM, disco, rete. Identico a quello che vedi in Zabbix, ma qui i dati vengono raccolti automaticamente.
 
-Prenditi 5 minuti a esplorare — capire cosa mostrano queste dashboard è già una competenza spendibile al colloquio.
 
 ---
 
 ### Step 5 — Crea un alert reale
-
-Questo è il pezzo più importante. Al colloquio ti chiederanno: *"Come ti accorgi se qualcosa va male dopo un deploy?"*
 
 Creiamo un alert che scatta se un pod nel namespace `lab` è in crash da più di 1 minuto.
 
